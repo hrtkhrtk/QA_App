@@ -3,6 +3,8 @@ package jp.techacademy.hirotaka.iwasaki.qa_app
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -76,8 +78,73 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
             val nameTextView = convertView.findViewById<View>(R.id.nameTextView) as TextView
             nameTextView.text = name
 
-            val favoriteButton = convertView.findViewById<View>(R.id.favoriteButton) // as Buttonを付けるとエラーになる
-            favoriteButton.setOnClickListener(this) // 書き方についてLesson4項目3.1参照
+        // ↓参考：changeButton.setOnClickListener（など）
+            // ログイン済みのユーザーを取得する
+            val user = FirebaseAuth.getInstance().currentUser
+
+            if (user == null) {
+                // ログインしていない場合は何もしない
+                //Snackbar.make(v, "ログインしていません", Snackbar.LENGTH_LONG).show()
+            } else {
+                val favoriteButton = convertView.findViewById<View>(R.id.favoriteButton) // as Buttonを付けるとエラーになる
+
+
+                val dataBaseReference = FirebaseDatabase.getInstance().reference
+                val userRef = dataBaseReference.child(UsersPATH).child(user.uid)
+                //userRef.addListenerForSingleValueEvent(
+                userRef.addValueEventListener(
+                    object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            Log.d("test191106n50", "test191106n50")
+                            val userData = snapshot.value as MutableMap<String, String>
+                            Log.d("test191106n51", (userData!![FavoritesPATH] == null).toString())
+                            if (userData!![FavoritesPATH] == null) {
+                                favoriteButton.setBackgroundColor(Color.parseColor("#0000ff")); // 参考：https://seesaawiki.jp/w/moonlight_aska/d/%A5%D3%A5%E5%A1%BC%A4%CE%C7%D8%B7%CA%BF%A7%A4%F2%A4%AB%A4%A8%A4%EB
+                            }
+                            else {
+                                /*
+                                //favoriteButton.background = "#ff0000" as Drawable // こんな書き方で大丈夫？ // エラー
+                                //favoriteButton.background = Color.parseColor("#ff0000") as Drawable // エラー
+                                favoriteButton.setBackgroundColor(Color.parseColor("#ff0000")); // 参考：https://seesaawiki.jp/w/moonlight_aska/d/%A5%D3%A5%E5%A1%BC%A4%CE%C7%D8%B7%CA%BF%A7%A4%F2%A4%AB%A4%A8%A4%EB
+                                //favoriteButton.setTextColor(Color.parseColor("#ffd900")) // 参考：https://www.javadrive.jp/android/color/index5.html
+                                    //↑なぜかエラー
+                                //favoriteButton.text = "unfav"
+                                    //↑なぜかエラー
+                                */
+
+                                //existingFavoriteList = userData!![FavoritesPATH] as ArrayList<String>
+                                //val existingFavoriteList = userData!![FavoritesPATH] as ArrayList<String>
+                                val existingFavoriteList = userData!![FavoritesPATH] as ArrayList<MutableMap<String, String>>
+                                //val existingFavoriteQuestionUidList = existingFavoriteList.map{ element -> element["questionUid"] } as ArrayList<String>
+
+                                val data = mutableMapOf<String, String>()
+                                data.put("genre", mQustion.genre.toString())
+                                data.put("questionUid", mQustion.questionUid)
+
+                                //参考：https://engineer-club.jp/java-contains#CollectionListSetQueueStack
+                                //if (!(existingFavoriteList.contains(mQustion.questionUid))) { // 含まれなければ
+                                if (!(existingFavoriteList.contains(data))) { // 含まれなければ
+                                //if (!(existingFavoriteQuestionUidList.contains(mQustion.questionUid))) { // 含まれなければ
+                                    favoriteButton.setBackgroundColor(Color.parseColor("#0000ff")); // 参考：https://seesaawiki.jp/w/moonlight_aska/d/%A5%D3%A5%E5%A1%BC%A4%CE%C7%D8%B7%CA%BF%A7%A4%F2%A4%AB%A4%A8%A4%EB
+                                }
+                                else { // 含まれていれば
+                                    favoriteButton.setBackgroundColor(Color.parseColor("#ff0000")); // 参考：https://seesaawiki.jp/w/moonlight_aska/d/%A5%D3%A5%E5%A1%BC%A4%CE%C7%D8%B7%CA%BF%A7%A4%F2%A4%AB%A4%A8%A4%EB
+                                }
+
+                            }
+                        }
+                        override fun onCancelled(firebaseError: DatabaseError) {}
+                    }
+                )
+
+                favoriteButton.visibility = View.VISIBLE
+                favoriteButton.setOnClickListener(this) // 書き方についてLesson4項目3.1参照
+            }
+
+            //val favoriteButton = convertView.findViewById<View>(R.id.favoriteButton) // as Buttonを付けるとエラーになる
+            //favoriteButton.setOnClickListener(this) // 書き方についてLesson4項目3.1参照
+
+
 
             val bytes = mQustion.imageBytes
             if (bytes.isNotEmpty()) {
@@ -141,17 +208,45 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
                         Log.d("test191106n40", (userData!![FavoritesPATH] == null).toString())
 
                         if (userData!![FavoritesPATH] == null) {
-                            val existingFavoriteList = ArrayList<String>()
-                            existingFavoriteList.add(mQustion.questionUid)
+                            //val existingFavoriteList = ArrayList<String>()
+                            //existingFavoriteList.add(mQustion.questionUid)
+                            //dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH).setValue(existingFavoriteList)
+
+                            //val existingFavoriteList = ArrayList<HashMap<String, String>>()
+                            val existingFavoriteList = ArrayList<MutableMap<String, String>>()
+                            //val data = HashMap<String, String>()
+                            val data = mutableMapOf<String, String>()
+                            data.put("genre", mQustion.genre.toString())
+                            data.put("questionUid", mQustion.questionUid)
+                            existingFavoriteList.add(data)
                             dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH).setValue(existingFavoriteList)
+
                         }
                         else {
                             //existingFavoriteList = userData!![FavoritesPATH] as ArrayList<String>
-                            val existingFavoriteList = userData!![FavoritesPATH] as ArrayList<String>
+                            //val existingFavoriteList = userData!![FavoritesPATH] as ArrayList<String>
+                            val existingFavoriteList = userData!![FavoritesPATH] as ArrayList<MutableMap<String, String>>
+                            //val existingFavoriteQuestionUidList = existingFavoriteList.map{ element -> element["questionUid"] } as ArrayList<String>
+
+                            val data = mutableMapOf<String, String>()
+                            data.put("genre", mQustion.genre.toString())
+                            data.put("questionUid", mQustion.questionUid)
 
                             //参考：https://engineer-club.jp/java-contains#CollectionListSetQueueStack
-                            if (!(existingFavoriteList.contains(mQustion.questionUid))) { // 含まれなければ
-                                existingFavoriteList.add(mQustion.questionUid)
+                            //if (!(existingFavoriteList.contains(mQustion.questionUid))) { // 含まれなければ追加
+                            if (!(existingFavoriteList.contains(data))) { // 含まれなければ追加
+                            //if (!(existingFavoriteQuestionUidList.contains(mQustion.questionUid))) { // 含まれなければ追加
+                                //existingFavoriteList.add(mQustion.questionUid)
+                                //dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH).setValue(existingFavoriteList)
+
+                                existingFavoriteList.add(data)
+                                dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH).setValue(existingFavoriteList)
+                            }
+                            else { // 含まれていれば削除
+                                //existingFavoriteList.remove(mQustion.questionUid) // 参考：Lesson3項目11.3
+                                //dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH).setValue(existingFavoriteList)
+
+                                existingFavoriteList.remove(data) // 参考：Lesson3項目11.3
                                 dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH).setValue(existingFavoriteList)
                             }
 

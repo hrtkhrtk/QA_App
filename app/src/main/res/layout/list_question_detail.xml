@@ -39,6 +39,7 @@
         android:id="@+id/favoriteButton"
         android:layout_below="@+id/bodyTextView"
         android:layout_toEndOf="@+id/imageView"
-        android:layout_marginTop="5dp"/>
+        android:layout_marginTop="5dp"
+        android:visibility="gone"/>
 
 </RelativeLayout>

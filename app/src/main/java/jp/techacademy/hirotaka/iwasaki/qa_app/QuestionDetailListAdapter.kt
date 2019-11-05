@@ -9,8 +9,22 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import android.support.design.widget.Snackbar
+import android.util.Log
 
-class QuestionDetailListAdapter(context: Context, private val mQustion: Question) : BaseAdapter() {
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ChildEventListener
+import com.google.firebase.database.DataSnapshot
+
+import java.util.HashMap
+import java.util.ArrayList
+import java.util.HashSet
+
+class QuestionDetailListAdapter(context: Context, private val mQustion: Question) : BaseAdapter(), View.OnClickListener {
     companion object {
         private val TYPE_QUESTION = 0
         private val TYPE_ANSWER = 1
@@ -62,6 +76,9 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
             val nameTextView = convertView.findViewById<View>(R.id.nameTextView) as TextView
             nameTextView.text = name
 
+            val favoriteButton = convertView.findViewById<View>(R.id.favoriteButton) // as Buttonを付けるとエラーになる
+            favoriteButton.setOnClickListener(this) // 書き方についてLesson4項目3.1参照
+
             val bytes = mQustion.imageBytes
             if (bytes.isNotEmpty()) {
                 val image = BitmapFactory.decodeByteArray(bytes, 0, bytes.size).copy(Bitmap.Config.ARGB_8888, true)
@@ -85,5 +102,135 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
         }
 
         return convertView
+    }
+
+    override fun onClick(v: View) {
+        // ↓参考：changeButton.setOnClickListener（など）
+        // ログイン済みのユーザーを取得する
+        val user = FirebaseAuth.getInstance().currentUser
+
+        if (user == null) {
+            // ログインしていない場合は何もしない
+            Snackbar.make(v, "ログインしていません", Snackbar.LENGTH_LONG).show()
+        } else {
+            // Firebaseに保存する
+            val dataBaseReference = FirebaseDatabase.getInstance().reference
+            //val favoriteRef = dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH)
+            val userRef = dataBaseReference.child(UsersPATH).child(user.uid)
+
+            //Log.d("test191106n06", user.uid.toString())
+
+            //val data = HashMap<String, String>()
+            //var data = HashMap<String, ArrayList<String>>()
+            //var userData : Map<*, *>? = null
+            //var userData : HashMap<*, *>? = null
+            //var userData : HashMap<String, *>? = null
+
+            //var userData : Map<String, String>? = null
+            var userData : MutableMap<String, String>? = null
+              // ↑Lesson8項目8.5の
+              // 「val map = dataSnapshot.value as Map<String, String>」
+              // 「val answerMap = map["answers"] as Map<String, String>?」
+              //  から類推してこれでいい
+
+            val existingFavoriteList = ArrayList<String>()
+            //val existingFavoriteSet = ArraySet<String>()
+            //val existingFavoriteSet = mutableSetOf<String>()
+
+            // ↓参考：Lesson8「Firebaseからデータを一度だけ取得する場合はDatabaseReferenceクラスが実装しているQueryクラスのaddListenerForSingleValueEventメソッドを使います。」
+              // これも参照→https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
+            //favoriteRef.addListenerForSingleValueEvent(
+            userRef.addListenerForSingleValueEvent(
+
+                object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        Log.d("test191106n07", "test191106n07")
+
+                        //userData = snapshot.value as Map<String, String>
+                        userData = snapshot.value as MutableMap<String, String>
+
+                        Log.d("test191106n40", (userData!![FavoritesPATH] == null).toString())
+
+                        //if (userData!![FavoritesPATH] == null) {
+                        if (userData!![FavoritesPATH] == null) {
+                            existingFavoriteList.add(mQustion.questionUid)
+                            //existingFavoriteList.add(mQustion.questionUid)
+                            //Log.d("test191106n30", "test191106n30")
+
+                            //existingFavoriteSet.add(mQustion.questionUid)
+                            //existingFavoriteSet.add(mQustion.questionUid)
+
+                            /*
+                            val dataToSet = HashMap<String, ArrayList<String>>()
+                              // 参考↑：SettingActivity.kt
+                            dataToSet[FavoritesPATH] = existingFavoriteList
+                            userRef.setValue(dataToSet)
+                            */
+
+                            //userData!!.put(FavoritesPATH, existingFavoriteList)
+
+                            dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH).setValue(existingFavoriteList)
+                            //dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH).setValue(existingFavoriteSet)
+
+
+                        }
+
+
+
+
+
+                    }
+                    override fun onCancelled(firebaseError: DatabaseError) {}
+                }
+            )
+
+
+
+            /*
+                //userRef.addChildEventListener(
+                userRef.addChildEventListener(
+                    object : ChildEventListener {
+                        override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) {
+
+                            val data = dataSnapshot.value as Map<*, *>?
+                            Log.d("test191106n20", (data == null).toString())
+                        }
+
+                        override fun onChildChanged(dataSnapshot: DataSnapshot, s: String?) {}
+                        override fun onChildRemoved(dataSnapshot: DataSnapshot) {}
+                        override fun onChildMoved(dataSnapshot: DataSnapshot, s: String?) {}
+                        override fun onCancelled(databaseError: DatabaseError) {}
+                    }
+                )
+            */
+
+            /*
+            if (userData!![FavoritesPATH] == null) {
+                existingFavoriteList.add(mQustion.questionUid)
+            }
+            */
+
+
+
+            //Log.d("test191106n01", userData!!["name"])
+
+            /*
+            if (userData!!["favorites"] == null) {
+                existingFavoriteList.add(mQustion.questionUid)
+            }
+            */
+
+            //userData[FavoritesPATH] = existingFavoriteList
+            //userData!![FavoritesPATH] = ""
+            //userData!!["favorites"] = "" as String
+
+
+
+        }
+
+
+
+
+
     }
 }

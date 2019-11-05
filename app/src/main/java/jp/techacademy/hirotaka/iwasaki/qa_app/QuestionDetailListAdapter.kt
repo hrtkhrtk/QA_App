@@ -118,24 +118,13 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
             //val favoriteRef = dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH)
             val userRef = dataBaseReference.child(UsersPATH).child(user.uid)
 
-            //Log.d("test191106n06", user.uid.toString())
-
-            //val data = HashMap<String, String>()
-            //var data = HashMap<String, ArrayList<String>>()
-            //var userData : Map<*, *>? = null
-            //var userData : HashMap<*, *>? = null
-            //var userData : HashMap<String, *>? = null
-
-            //var userData : Map<String, String>? = null
             var userData : MutableMap<String, String>? = null
               // ↑Lesson8項目8.5の
               // 「val map = dataSnapshot.value as Map<String, String>」
               // 「val answerMap = map["answers"] as Map<String, String>?」
               //  から類推してこれでいい
 
-            val existingFavoriteList = ArrayList<String>()
-            //val existingFavoriteSet = ArraySet<String>()
-            //val existingFavoriteSet = mutableSetOf<String>()
+            //var existingFavoriteList = ArrayList<String>()
 
             // ↓参考：Lesson8「Firebaseからデータを一度だけ取得する場合はDatabaseReferenceクラスが実装しているQueryクラスのaddListenerForSingleValueEventメソッドを使います。」
               // これも参照→https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
@@ -151,30 +140,22 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
 
                         Log.d("test191106n40", (userData!![FavoritesPATH] == null).toString())
 
-                        //if (userData!![FavoritesPATH] == null) {
                         if (userData!![FavoritesPATH] == null) {
+                            val existingFavoriteList = ArrayList<String>()
                             existingFavoriteList.add(mQustion.questionUid)
-                            //existingFavoriteList.add(mQustion.questionUid)
-                            //Log.d("test191106n30", "test191106n30")
-
-                            //existingFavoriteSet.add(mQustion.questionUid)
-                            //existingFavoriteSet.add(mQustion.questionUid)
-
-                            /*
-                            val dataToSet = HashMap<String, ArrayList<String>>()
-                              // 参考↑：SettingActivity.kt
-                            dataToSet[FavoritesPATH] = existingFavoriteList
-                            userRef.setValue(dataToSet)
-                            */
-
-                            //userData!!.put(FavoritesPATH, existingFavoriteList)
-
                             dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH).setValue(existingFavoriteList)
-                            //dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH).setValue(existingFavoriteSet)
+                        }
+                        else {
+                            //existingFavoriteList = userData!![FavoritesPATH] as ArrayList<String>
+                            val existingFavoriteList = userData!![FavoritesPATH] as ArrayList<String>
 
+                            //参考：https://engineer-club.jp/java-contains#CollectionListSetQueueStack
+                            if (!(existingFavoriteList.contains(mQustion.questionUid))) { // 含まれなければ
+                                existingFavoriteList.add(mQustion.questionUid)
+                                dataBaseReference.child(UsersPATH).child(user.uid).child(FavoritesPATH).setValue(existingFavoriteList)
+                            }
 
                         }
-
 
 
 

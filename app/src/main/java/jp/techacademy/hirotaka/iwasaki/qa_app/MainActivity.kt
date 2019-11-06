@@ -14,14 +14,11 @@ import android.view.MenuItem
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import android.support.design.widget.Snackbar
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import android.util.Base64  //追加する
+import android.util.Log
 import android.view.View
 import android.widget.ListView
+import com.google.firebase.database.*
 
 //import kotlinx.android.synthetic.main.activity_main.*
 
@@ -113,8 +110,146 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // --- ここまで追加する ---
 
     //private val mEventListenerForFavorite = object : ChildEventListener {
-    //    // TODO:
-    //}
+    private val mEventListenerForFavorite = object : ValueEventListener {
+        // TODO:
+
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            Log.d("test191107n002", "test191107n002")
+            val map = dataSnapshot.value as Map<String, String> // Map<String, String>? としなくていい？
+            val favoriteList = map["favorites"] as java.util.ArrayList<MutableMap<String, String>> // 参考：C:\Users\USER\Documents\TechAcademy Android\QA_App\app\src\main\java\jp\techacademy\hirotaka\iwasaki\qa_app\QuestionDetailListAdapter.kt
+            for (favoriteElement in favoriteList) {
+                val genre = favoriteElement["genre"]
+                val questionUid = favoriteElement["questionUid"]
+
+                //val questionRef = mDataBaseReference.child(ContentsPATH).child(genre).child(questionUid) // mDataBaseReferenceはまだ使えないっぽい
+                val questionRef = FirebaseDatabase.getInstance().reference.child(ContentsPATH).child(genre!!).child(questionUid!!)
+                questionRef.addListenerForSingleValueEvent( // addListenerForSingleValueEvent or addValueEventListener // 参考：https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
+                    object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            // この中は「val mEventListener」の「fun onChildAdded」と同じでいいと思う
+                            //val map2 = snapshot.value as Map<String, String> // <String, String> でいい？
+                            val map2 = snapshot.value as Map<String, String>? // 質問が削除されたらnullになりそうだからnull許容型にする
+                            if (map2 != null) { // smart cast
+                                //val map2 = dataSnapshot.value as Map<String, String>
+                                val title = map2["title"] ?: ""
+                                val body = map2["body"] ?: ""
+                                val name = map2["name"] ?: ""
+                                val uid = map2["uid"] ?: ""
+                                val imageString = map2["image"] ?: ""
+                                val bytes =
+                                        if (imageString.isNotEmpty()) {
+                                            Base64.decode(imageString, Base64.DEFAULT)
+                                        } else {
+                                            byteArrayOf()
+                                        }
+
+                                val answerArrayList = ArrayList<Answer>()
+                                val answerMap = map2["answers"] as Map<String, String>?
+                                if (answerMap != null) {
+                                    for (key in answerMap.keys) {
+                                        val temp = answerMap[key] as Map<String, String>
+                                        val answerBody = temp["body"] ?: ""
+                                        val answerName = temp["name"] ?: ""
+                                        val answerUid = temp["uid"] ?: ""
+                                        val answer = Answer(answerBody, answerName, answerUid, key)
+                                        answerArrayList.add(answer)
+                                    }
+                                }
+
+                                val question = Question(title, body, name, uid, dataSnapshot.key ?: "",
+                                        mGenre, bytes, answerArrayList)
+                                mQuestionArrayList.add(question)
+                                mAdapter.notifyDataSetChanged()
+                            }
+                        }
+
+                        override fun onCancelled(firebaseError: DatabaseError) {}
+                    }
+                )
+
+
+            }
+        }
+
+        override fun onCancelled(firebaseError: DatabaseError) {}
+
+        /*
+        override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) {
+            Log.d("test191107n002", "test191107n002")
+            val map = dataSnapshot.value as Map<String, String> // Map<String, String>? としなくていい？
+            val favoriteList = map["favorites"] as java.util.ArrayList<MutableMap<String, String>> // 参考：C:\Users\USER\Documents\TechAcademy Android\QA_App\app\src\main\java\jp\techacademy\hirotaka\iwasaki\qa_app\QuestionDetailListAdapter.kt
+            for (favoriteElement in favoriteList) {
+                val genre = favoriteElement["genre"]
+                val questionUid = favoriteElement["questionUid"]
+
+                //val questionRef = mDataBaseReference.child(ContentsPATH).child(genre).child(questionUid) // mDataBaseReferenceはまだ使えないっぽい
+                val questionRef = FirebaseDatabase.getInstance().reference.child(ContentsPATH).child(genre!!).child(questionUid!!)
+                questionRef.addListenerForSingleValueEvent( // addListenerForSingleValueEvent or addValueEventListener // 参考：https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
+                    object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            // この中は「val mEventListener」の「fun onChildAdded」と同じでいいと思う
+                            //val map = snapshot.value as Map<String, String> // <String, String> でいい？
+                            val map = snapshot.value as Map<String, String>? // 質問が削除されたらnullになりそうだからnull許容型にする
+                            if (map != null) { // smart cast
+                                val map = dataSnapshot.value as Map<String, String>
+                                val title = map["title"] ?: ""
+                                val body = map["body"] ?: ""
+                                val name = map["name"] ?: ""
+                                val uid = map["uid"] ?: ""
+                                val imageString = map["image"] ?: ""
+                                val bytes =
+                                        if (imageString.isNotEmpty()) {
+                                            Base64.decode(imageString, Base64.DEFAULT)
+                                        } else {
+                                            byteArrayOf()
+                                        }
+
+                                val answerArrayList = ArrayList<Answer>()
+                                val answerMap = map["answers"] as Map<String, String>?
+                                if (answerMap != null) {
+                                    for (key in answerMap.keys) {
+                                        val temp = answerMap[key] as Map<String, String>
+                                        val answerBody = temp["body"] ?: ""
+                                        val answerName = temp["name"] ?: ""
+                                        val answerUid = temp["uid"] ?: ""
+                                        val answer = Answer(answerBody, answerName, answerUid, key)
+                                        answerArrayList.add(answer)
+                                    }
+                                }
+
+                                val question = Question(title, body, name, uid, dataSnapshot.key ?: "",
+                                        mGenre, bytes, answerArrayList)
+                                mQuestionArrayList.add(question)
+                                mAdapter.notifyDataSetChanged()
+                            }
+                        }
+
+                        override fun onCancelled(firebaseError: DatabaseError) {}
+                    }
+                )
+
+
+            }
+
+        }
+
+        override fun onChildChanged(dataSnapshot: DataSnapshot, s: String?) {
+
+        }
+
+        override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+
+        }
+
+        override fun onChildMoved(dataSnapshot: DataSnapshot, s: String?) {
+
+        }
+
+        override fun onCancelled(databaseError: DatabaseError) {
+
+        }
+        */
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -162,23 +297,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         // ナビゲーションドロワーの設定
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
-        //課題のために追加↓
-        //val nameText = findViewById(R.id.nameText) // これじゃダメっぽい
-        //val nav_favorite = findViewById<DrawerLayout>(R.id.nav_compter) // これでいい？ // これじゃダメっぽい
-        //val nav_favorite02 = findViewById<menu>(R.id.nav_compter)
-        //val nav_favorite03 = findViewById<group>(R.id.nav_compter)
-        //val nav_favorite03 = findViewById<View>(R.id.nav_compter)
-        //val nav_favorite04 = drawer.findViewById(R.id.nav_compter)
-        //val nav_favorite05 = findViewById<DrawerLayout>(R.id.nav_compter)
-
-        // 参考↓：https://qiita.com/araiyusuke/items/9ce5f2abb8c574f349d1 「ナビゲーションのヘッダーやメニューにアクセスする」
-        //val navigationView = findViewById<View>(R.id.nav_view) as NavigationView
-        //val menuNav = navigationView.getMenu()
-        //val nav_favorite = menuNav.findItem(R.id.nav_favorite)
-        //nav_favorite.visibility = View.VISIBLE
-
-
-        //課題のために追加↑
         val toggle = ActionBarDrawerToggle(this, drawer, mToolbar, R.string.app_name, R.string.app_name)
         drawer.addDrawerListener(toggle)
         toggle.syncState()
@@ -190,12 +308,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // 参考↓：https://qiita.com/araiyusuke/items/9ce5f2abb8c574f349d1 「ナビゲーションのヘッダーやメニューにアクセスする」
         //       ：http://blog.techfirm.co.jp/2016/02/15/design-support-library-navigationview%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6/
                     //　なお、「import android.support.design.widget.NavigationView;」は元からimportしていた
-
-        val menuNav = navigationView.getMenu()
-        val nav_favorite = menuNav.findItem(R.id.nav_favorite)
-        //nav_favorite.visibility = View.VISIBLE // これは動作しない
-        //nav_favorite.setTitle("ほげ") // これは動作した
-        //nav_favorite.setVisible(false) // これは動作した // 参考：https://stackoverflow.com/questions/10692755/how-do-i-hide-a-menu-item-in-the-actionbar
+        // ログイン済みのユーザーを取得する
+        // removeAuthStateListenerしなくていい？（参考：https://firebase.google.com/docs/reference/android/com/google/firebase/auth/FirebaseAuth.AuthStateListener）
+        FirebaseAuth.getInstance().addAuthStateListener { // 参考：https://code.luasoftware.com/tutorials/android/firebase-authentication-on-android/
+                                                          // 参考：https://firebase.google.com/docs/reference/android/com/google/firebase/auth/FirebaseAuth.AuthStateListener
+            //Log.d("test191107n001", "addAuthStateListener") // test成功
+            val user = FirebaseAuth.getInstance().currentUser
+            val menuNav = navigationView.getMenu()
+            val nav_favorite = menuNav.findItem(R.id.nav_favorite)
+            if (user == null) {
+                // ログインしていなければ非表示にする
+                //nav_favorite.visibility = View.VISIBLE // これは動作しない
+                //nav_favorite.setTitle("ほげ") // これは動作した
+                nav_favorite.setVisible(false) // これは動作した // 参考：https://stackoverflow.com/questions/10692755/how-do-i-hide-a-menu-item-in-the-actionbar
+            }
+            else {
+                //ログインしていれば表示する
+                nav_favorite.setVisible(true) // 参考：https://stackoverflow.com/questions/10692755/how-do-i-hide-a-menu-item-in-the-actionbar
+            }
+        }
         //課題のために追加↑
 
         // --- ここから ---
@@ -263,7 +394,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         } else if (id == R.id.nav_compter) {
             mToolbar.title = "コンピューター"
             mGenre = 4
-        } else if (id == R.id.nav_favorite) {
+        } else if (id == R.id.nav_favorite && user != null) {
             mToolbar.title = "お気に入り"
             mGenre = -1
         }
@@ -281,17 +412,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (mGenreRef != null) {
             mGenreRef!!.removeEventListener(mEventListener)
         }
-        if (mUserRef != null) {
-            //mUserRef!!.removeEventListener(mEventListenerForFavorite)
+        if (mUserRef != null) { // 課題のために追加
+            mUserRef!!.removeEventListener(mEventListenerForFavorite)
         }
 
         if (mGenre > 0) {
             mGenreRef = mDatabaseReference.child(ContentsPATH).child(mGenre.toString())
             mGenreRef!!.addChildEventListener(mEventListener)
-        } else if (mGenre < 0) {
-
-            //mUserRef = mDatabaseReference.child(UsersPATH).child(user.uid)
-
+        } else if (mGenre < 0 && user != null) {
+            mUserRef = mDatabaseReference.child(UsersPATH).child(user.uid) // userはsmart castされている（Lesson3）
+            //mUserRef!!.addChildEventListener(mEventListenerForFavorite)
+            mUserRef!!.addValueEventListener(mEventListenerForFavorite)
         }
 
         // --- ここまで追加する ---

@@ -20,6 +20,7 @@ import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import android.util.Base64  //追加する
+import android.view.View
 import android.widget.ListView
 
 //import kotlinx.android.synthetic.main.activity_main.*
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var mAdapter: QuestionsListAdapter
 
     private var mGenreRef: DatabaseReference? = null
+    private var mUserRef: DatabaseReference? = null
 
     private val mEventListener = object : ChildEventListener {
         override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) {
@@ -110,6 +112,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
     // --- ここまで追加する ---
 
+    //private val mEventListenerForFavorite = object : ChildEventListener {
+    //    // TODO:
+    //}
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -156,12 +162,41 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         // ナビゲーションドロワーの設定
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
+        //課題のために追加↓
+        //val nameText = findViewById(R.id.nameText) // これじゃダメっぽい
+        //val nav_favorite = findViewById<DrawerLayout>(R.id.nav_compter) // これでいい？ // これじゃダメっぽい
+        //val nav_favorite02 = findViewById<menu>(R.id.nav_compter)
+        //val nav_favorite03 = findViewById<group>(R.id.nav_compter)
+        //val nav_favorite03 = findViewById<View>(R.id.nav_compter)
+        //val nav_favorite04 = drawer.findViewById(R.id.nav_compter)
+        //val nav_favorite05 = findViewById<DrawerLayout>(R.id.nav_compter)
+
+        // 参考↓：https://qiita.com/araiyusuke/items/9ce5f2abb8c574f349d1 「ナビゲーションのヘッダーやメニューにアクセスする」
+        //val navigationView = findViewById<View>(R.id.nav_view) as NavigationView
+        //val menuNav = navigationView.getMenu()
+        //val nav_favorite = menuNav.findItem(R.id.nav_favorite)
+        //nav_favorite.visibility = View.VISIBLE
+
+
+        //課題のために追加↑
         val toggle = ActionBarDrawerToggle(this, drawer, mToolbar, R.string.app_name, R.string.app_name)
         drawer.addDrawerListener(toggle)
         toggle.syncState()
 
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.setNavigationItemSelectedListener(this)
+
+        //課題のために追加↓
+        // 参考↓：https://qiita.com/araiyusuke/items/9ce5f2abb8c574f349d1 「ナビゲーションのヘッダーやメニューにアクセスする」
+        //       ：http://blog.techfirm.co.jp/2016/02/15/design-support-library-navigationview%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6/
+                    //　なお、「import android.support.design.widget.NavigationView;」は元からimportしていた
+
+        val menuNav = navigationView.getMenu()
+        val nav_favorite = menuNav.findItem(R.id.nav_favorite)
+        //nav_favorite.visibility = View.VISIBLE // これは動作しない
+        //nav_favorite.setTitle("ほげ") // これは動作した
+        //nav_favorite.setVisible(false) // これは動作した // 参考：https://stackoverflow.com/questions/10692755/how-do-i-hide-a-menu-item-in-the-actionbar
+        //課題のために追加↑
 
         // --- ここから ---
         // Firebase
@@ -213,6 +248,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
 
+        // ログイン済みのユーザーを取得する
+        val user = FirebaseAuth.getInstance().currentUser
+
         if (id == R.id.nav_hobby) {
             mToolbar.title = "趣味"
             mGenre = 1
@@ -225,6 +263,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         } else if (id == R.id.nav_compter) {
             mToolbar.title = "コンピューター"
             mGenre = 4
+        } else if (id == R.id.nav_favorite) {
+            mToolbar.title = "お気に入り"
+            mGenre = -1
         }
 
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
@@ -240,8 +281,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (mGenreRef != null) {
             mGenreRef!!.removeEventListener(mEventListener)
         }
-        mGenreRef = mDatabaseReference.child(ContentsPATH).child(mGenre.toString())
-        mGenreRef!!.addChildEventListener(mEventListener)
+        if (mUserRef != null) {
+            //mUserRef!!.removeEventListener(mEventListenerForFavorite)
+        }
+
+        if (mGenre > 0) {
+            mGenreRef = mDatabaseReference.child(ContentsPATH).child(mGenre.toString())
+            mGenreRef!!.addChildEventListener(mEventListener)
+        } else if (mGenre < 0) {
+
+            //mUserRef = mDatabaseReference.child(UsersPATH).child(user.uid)
+
+        }
+
         // --- ここまで追加する ---
 
         return true

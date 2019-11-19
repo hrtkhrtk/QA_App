@@ -13,6 +13,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.support.design.widget.Snackbar
 import android.util.Log
+import android.widget.Button
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseError
@@ -86,7 +87,8 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
                 // ログインしていない場合は何もしない
                 //Snackbar.make(v, "ログインしていません", Snackbar.LENGTH_LONG).show()
             } else {
-                val favoriteButton = convertView.findViewById<View>(R.id.favoriteButton) // as Buttonを付けるとエラーになる
+                //val favoriteButton = convertView.findViewById<View>(R.id.favoriteButton) // as Buttonを付けるとエラーになる
+                val favoriteButton = convertView.findViewById<Button>(R.id.favoriteButton) // as Buttonを付けるとエラーになる
 
 
                 val dataBaseReference = FirebaseDatabase.getInstance().reference
@@ -122,10 +124,11 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
                                 //参考：https://engineer-club.jp/java-contains#CollectionListSetQueueStack
                                 if (!(existingFavoriteList.contains(data))) { // 含まれなければ
                                     favoriteButton.setBackgroundColor(Color.parseColor("#0000ff")); // 参考：https://seesaawiki.jp/w/moonlight_aska/d/%A5%D3%A5%E5%A1%BC%A4%CE%C7%D8%B7%CA%BF%A7%A4%F2%A4%AB%A4%A8%A4%EB
+                                    favoriteButton.text = "fav"
                                 }
                                 else { // 含まれていれば
                                     favoriteButton.setBackgroundColor(Color.parseColor("#ff0000")); // 参考：https://seesaawiki.jp/w/moonlight_aska/d/%A5%D3%A5%E5%A1%BC%A4%CE%C7%D8%B7%CA%BF%A7%A4%F2%A4%AB%A4%A8%A4%EB
-                                    //favoriteButton.text = "unfav"
+                                    favoriteButton.text = "unfav"
                                 }
 
                             }

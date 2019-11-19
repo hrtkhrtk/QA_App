@@ -125,6 +125,7 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
                                 }
                                 else { // 含まれていれば
                                     favoriteButton.setBackgroundColor(Color.parseColor("#ff0000")); // 参考：https://seesaawiki.jp/w/moonlight_aska/d/%A5%D3%A5%E5%A1%BC%A4%CE%C7%D8%B7%CA%BF%A7%A4%F2%A4%AB%A4%A8%A4%EB
+                                    //favoriteButton.text = "unfav"
                                 }
 
                             }

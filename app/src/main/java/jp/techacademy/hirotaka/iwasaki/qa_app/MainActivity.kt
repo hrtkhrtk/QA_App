@@ -109,7 +109,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
     // --- ここまで追加する ---
 
-    //private val mEventListenerForFavorite = object : ChildEventListener {
     private val mEventListenerForFavorite = object : ValueEventListener {
         // TODO:
 
@@ -117,7 +116,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             Log.d("test191107n002", "test191107n002")
             val map = dataSnapshot.value as Map<String, String> // Map<String, String>? としなくていい？
             val favoriteList = map["favorites"] as java.util.ArrayList<MutableMap<String, String>> // 参考：C:\Users\USER\Documents\TechAcademy Android\QA_App\app\src\main\java\jp\techacademy\hirotaka\iwasaki\qa_app\QuestionDetailListAdapter.kt
-            //mQuestionArrayList.clear() // .clear()についてLesson8項目8.5 // ここじゃない
             for (favoriteElement in favoriteList) {
                 val genre = favoriteElement["genre"]
                 val questionUid = favoriteElement["questionUid"]
@@ -160,63 +158,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                     }
                                 }
 
-                                //val question = Question(title, body, name, uid, dataSnapshot.key ?: "", mGenre, bytes, answerArrayList) // 間違い
-                                //val question = Question(title, body, name, uid, dataSnapshot.key ?: "", genre!!.toInt(), bytes, answerArrayList) // 間違い
+
                                 val question = Question(title, body, name, uid, questionUid, genre!!.toInt(), bytes, answerArrayList)
-                                //mQuestionArrayList.clear() // .clear()についてLesson8項目8.5 // ここじゃない
-//                                mQuestionArrayList.add(question)
 
-
-
-/*
-                                if (mQuestionArrayList.size > 0) {
-                                    for (q in mQuestionArrayList) { // 参考：Lesson8項目8.5
-                                        if (questionUid.equals(q.questionUid)) {
-                                            //q = question
-                                            mQuestionArrayList.add(question)
-
-//                                        mAdapter.notifyDataSetChanged()
-                                        } else {
-                                            mQuestionArrayList.add(question)
-                                        }
-                                    }
-                                } else {
-                                    mQuestionArrayList.add(question)
-                                }
-*/
-
-
-/*
-                                val mQuestionArrayListOld = mQuestionArrayList
-
-                                if (mQuestionArrayListOld.size > 0) { // > 0 でOK
-                                    mQuestionArrayList = mQuestionArrayListOld.map { old ->
-                                        //(questionUid.equals(old.questionUid)) ?:
-                                        if (questionUid.equals(old.questionUid)) question else old
-                                    }
-                                }
-*/
-
-                                //var targetForRemove as Question?
                                 var targetForRemove: Question? = null
                                 for (q in mQuestionArrayList) { // 参考：Lesson8項目8.5
                                     if (questionUid.equals(q.questionUid)) {
                                         targetForRemove = q
-                                        //q = question
-                                        //mQuestionArrayList.remove(q)
-                                        //mQuestionArrayList.add(question)
-//                                        mAdapter.notifyDataSetChanged()
-                                    } //else {
-                                        //mQuestionArrayList.add(question)
-                                    //}
+                                    }
                                 }
 
                                 if (targetForRemove != null) {
                                     mQuestionArrayList.remove(targetForRemove)
                                 }
                                 mQuestionArrayList.add(question)
-
-
 
 
 
@@ -229,7 +184,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
                 questionRef.removeEventListener(localEventListener)
-                //questionRef.removeEventListener(this)
                 questionRef.addValueEventListener( // addListenerForSingleValueEvent or addValueEventListener // 参考：https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
 //                questionRef.addListenerForSingleValueEvent( // addListenerForSingleValueEvent or addValueEventListener // 参考：https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
                     // addListenerForSingleValueEventだと
@@ -239,96 +193,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     localEventListener
                 )
 
-
-
-/*
-                val localEventListener =
-                    object : ChildEventListener {
-
-                    }
-*/
-
             }
         }
 
         override fun onCancelled(firebaseError: DatabaseError) {}
-
-        /*
-        override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) {
-            Log.d("test191107n002", "test191107n002")
-            val map = dataSnapshot.value as Map<String, String> // Map<String, String>? としなくていい？
-            val favoriteList = map["favorites"] as java.util.ArrayList<MutableMap<String, String>> // 参考：C:\Users\USER\Documents\TechAcademy Android\QA_App\app\src\main\java\jp\techacademy\hirotaka\iwasaki\qa_app\QuestionDetailListAdapter.kt
-            for (favoriteElement in favoriteList) {
-                val genre = favoriteElement["genre"]
-                val questionUid = favoriteElement["questionUid"]
-
-                //val questionRef = mDataBaseReference.child(ContentsPATH).child(genre).child(questionUid) // mDataBaseReferenceはまだ使えないっぽい
-                val questionRef = FirebaseDatabase.getInstance().reference.child(ContentsPATH).child(genre!!).child(questionUid!!)
-                questionRef.addListenerForSingleValueEvent( // addListenerForSingleValueEvent or addValueEventListener // 参考：https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
-                    object : ValueEventListener {
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            // この中は「val mEventListener」の「fun onChildAdded」と同じでいいと思う
-                            //val map = snapshot.value as Map<String, String> // <String, String> でいい？
-                            val map = snapshot.value as Map<String, String>? // 質問が削除されたらnullになりそうだからnull許容型にする
-                            if (map != null) { // smart cast
-                                val map = dataSnapshot.value as Map<String, String>
-                                val title = map["title"] ?: ""
-                                val body = map["body"] ?: ""
-                                val name = map["name"] ?: ""
-                                val uid = map["uid"] ?: ""
-                                val imageString = map["image"] ?: ""
-                                val bytes =
-                                        if (imageString.isNotEmpty()) {
-                                            Base64.decode(imageString, Base64.DEFAULT)
-                                        } else {
-                                            byteArrayOf()
-                                        }
-
-                                val answerArrayList = ArrayList<Answer>()
-                                val answerMap = map["answers"] as Map<String, String>?
-                                if (answerMap != null) {
-                                    for (key in answerMap.keys) {
-                                        val temp = answerMap[key] as Map<String, String>
-                                        val answerBody = temp["body"] ?: ""
-                                        val answerName = temp["name"] ?: ""
-                                        val answerUid = temp["uid"] ?: ""
-                                        val answer = Answer(answerBody, answerName, answerUid, key)
-                                        answerArrayList.add(answer)
-                                    }
-                                }
-
-                                val question = Question(title, body, name, uid, dataSnapshot.key ?: "",
-                                        mGenre, bytes, answerArrayList)
-                                mQuestionArrayList.add(question)
-                                mAdapter.notifyDataSetChanged()
-                            }
-                        }
-
-                        override fun onCancelled(firebaseError: DatabaseError) {}
-                    }
-                )
-
-
-            }
-
-        }
-
-        override fun onChildChanged(dataSnapshot: DataSnapshot, s: String?) {
-
-        }
-
-        override fun onChildRemoved(dataSnapshot: DataSnapshot) {
-
-        }
-
-        override fun onChildMoved(dataSnapshot: DataSnapshot, s: String?) {
-
-        }
-
-        override fun onCancelled(databaseError: DatabaseError) {
-
-        }
-        */
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -160,10 +160,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                     }
                                 }
 
-                                val question = Question(title, body, name, uid, dataSnapshot.key ?: "",
-                                        mGenre, bytes, answerArrayList)
+                                //val question = Question(title, body, name, uid, dataSnapshot.key ?: "", mGenre, bytes, answerArrayList) // 間違い
+                                //val question = Question(title, body, name, uid, dataSnapshot.key ?: "", genre!!.toInt(), bytes, answerArrayList) // 間違い
+                                val question = Question(title, body, name, uid, questionUid, genre!!.toInt(), bytes, answerArrayList)
                                 //mQuestionArrayList.clear() // .clear()についてLesson8項目8.5 // ここじゃない
-                                mQuestionArrayList.add(question)
+//                                mQuestionArrayList.add(question)
+
+
+                                for (q in mQuestionArrayList) { // 参考：Lesson8項目8.5
+                                    if (questionUid.equals(q.questionUid)) {
+                                        q = question
+
+//                                        mAdapter.notifyDataSetChanged()
+                                    }
+                                }
+
                                 mAdapter.notifyDataSetChanged()
                             }
                         }
@@ -174,55 +185,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                 questionRef.removeEventListener(localEventListener)
                 //questionRef.removeEventListener(this)
-//                questionRef.addValueEventListener( // addListenerForSingleValueEvent or addValueEventListener // 参考：https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
-                questionRef.addListenerForSingleValueEvent( // addListenerForSingleValueEvent or addValueEventListener // 参考：https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
+                questionRef.addValueEventListener( // addListenerForSingleValueEvent or addValueEventListener // 参考：https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
+//                questionRef.addListenerForSingleValueEvent( // addListenerForSingleValueEvent or addValueEventListener // 参考：https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
                     // addListenerForSingleValueEventだと
                     // https://gyazo.com/a3235617d00de67fe2bb44a3aef48472（取得済み） の
                     // https://gyazo.com/395bf5c11d1672334c9f3ead2975c12d（取得済み） の数字が更新されない
                     // イベントリスナをremoveする必要がありそうな気がする
-                    /*
-                    object : ValueEventListener {
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            // この中は「val mEventListener」の「fun onChildAdded」と同じでいいと思う
-                            //val map2 = snapshot.value as Map<String, String> // <String, String> でいい？
-                            val map2 = snapshot.value as Map<String, String>? // 質問が削除されたらnullになりそうだからnull許容型にする
-                            if (map2 != null) { // smart cast
-                                //val map2 = dataSnapshot.value as Map<String, String>
-                                val title = map2["title"] ?: ""
-                                val body = map2["body"] ?: ""
-                                val name = map2["name"] ?: ""
-                                val uid = map2["uid"] ?: ""
-                                val imageString = map2["image"] ?: ""
-                                val bytes =
-                                        if (imageString.isNotEmpty()) {
-                                            Base64.decode(imageString, Base64.DEFAULT)
-                                        } else {
-                                            byteArrayOf()
-                                        }
-
-                                val answerArrayList = ArrayList<Answer>()
-                                val answerMap = map2["answers"] as Map<String, String>?
-                                if (answerMap != null) {
-                                    for (key in answerMap.keys) {
-                                        val temp = answerMap[key] as Map<String, String>
-                                        val answerBody = temp["body"] ?: ""
-                                        val answerName = temp["name"] ?: ""
-                                        val answerUid = temp["uid"] ?: ""
-                                        val answer = Answer(answerBody, answerName, answerUid, key)
-                                        answerArrayList.add(answer)
-                                    }
-                                }
-
-                                val question = Question(title, body, name, uid, dataSnapshot.key ?: "",
-                                        mGenre, bytes, answerArrayList)
-                                mQuestionArrayList.add(question)
-                                mAdapter.notifyDataSetChanged()
-                            }
-                        }
-
-                        override fun onCancelled(firebaseError: DatabaseError) {}
-                    }
-                    */
                     localEventListener
                 )
 

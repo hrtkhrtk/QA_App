@@ -116,6 +116,87 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             Log.d("test191107n002", "test191107n002")
             val map = dataSnapshot.value as Map<String, String> // Map<String, String>? としなくていい？
             val favoriteList = map["favorites"] as java.util.ArrayList<MutableMap<String, String>> // 参考：C:\Users\USER\Documents\TechAcademy Android\QA_App\app\src\main\java\jp\techacademy\hirotaka\iwasaki\qa_app\QuestionDetailListAdapter.kt
+
+
+            val questionUidList = favoriteList.map { favoriteElement -> favoriteElement["questionUid"] } // 参考：https://teratail.com/questions/144040「Listの要素を別のものに置き換えた新しいListを作るには」
+
+            val QuestionArrayListCopy = mQuestionArrayList
+            //for (q2 in mQuestionArrayList) {
+            for (q2 in QuestionArrayListCopy) {
+                if (!(questionUidList.contains(q2.questionUid))) { // 含まれていなければ
+                    //val questionRef = FirebaseDatabase.getInstance().reference.child(ContentsPATH).child(q2.genre).child(q2.questionUid)
+                    val questionRef = FirebaseDatabase.getInstance().reference.child(ContentsPATH).child(q2.genre.toString()).child(q2.questionUid)
+                    //questionRef.removeEventListener(localEventListener)
+
+/*
+                    val localEventListener =
+                        object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                // この中は「val mEventListener」の「fun onChildAdded」と同じでいいと思う
+                                //val map2 = snapshot.value as Map<String, String> // <String, String> でいい？
+                                val map2 = snapshot.value as Map<String, String>? // 質問が削除されたらnullになりそうだからnull許容型にする
+                                if (map2 != null) { // smart cast
+                                    //val map2 = dataSnapshot.value as Map<String, String>
+                                    val title = map2["title"] ?: ""
+                                    val body = map2["body"] ?: ""
+                                    val name = map2["name"] ?: ""
+                                    val uid = map2["uid"] ?: ""
+                                    val imageString = map2["image"] ?: ""
+                                    val bytes =
+                                            if (imageString.isNotEmpty()) {
+                                                Base64.decode(imageString, Base64.DEFAULT)
+                                            } else {
+                                                byteArrayOf()
+                                            }
+
+                                    val answerArrayList = ArrayList<Answer>()
+                                    val answerMap = map2["answers"] as Map<String, String>?
+                                    if (answerMap != null) {
+                                        for (key in answerMap.keys) {
+                                            val temp = answerMap[key] as Map<String, String>
+                                            val answerBody = temp["body"] ?: ""
+                                            val answerName = temp["name"] ?: ""
+                                            val answerUid = temp["uid"] ?: ""
+                                            val answer = Answer(answerBody, answerName, answerUid, key)
+                                            answerArrayList.add(answer)
+                                        }
+                                    }
+
+
+                                    val question = Question(title, body, name, uid, q2.questionUid, q2.genre, bytes, answerArrayList)
+
+                                    var targetForRemove: Question? = null
+                                    for (q in mQuestionArrayList) { // 参考：Lesson8項目8.5
+                                        if (q2.questionUid.equals(q.questionUid)) {
+                                            targetForRemove = q
+                                        }
+                                    }
+
+                                    if (targetForRemove != null) {
+                                        mQuestionArrayList.remove(targetForRemove)
+                                    }
+                                    mQuestionArrayList.add(question)
+
+
+
+                                    mAdapter.notifyDataSetChanged()
+                                }
+                            }
+
+                            override fun onCancelled(firebaseError: DatabaseError) {}
+                        }
+
+
+                    questionRef.removeEventListener(localEventListener) // これで機能している？
+*/
+
+                    mQuestionArrayList.remove(q2)
+
+//                    mAdapter.notifyDataSetChanged() // ここでいい？
+                }
+            }
+
+
             for (favoriteElement in favoriteList) {
                 val genre = favoriteElement["genre"]
                 val questionUid = favoriteElement["questionUid"]
@@ -123,6 +204,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 //val questionRef = mDataBaseReference.child(ContentsPATH).child(genre).child(questionUid) // mDataBaseReferenceはまだ使えないっぽい
                 val questionRef = FirebaseDatabase.getInstance().reference.child(ContentsPATH).child(genre!!).child(questionUid!!)
                 //questionRef.addListenerForSingleValueEvent( // addListenerForSingleValueEvent or addValueEventListener // 参考：https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
+
 
 
                 val localEventListener =
@@ -169,7 +251,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 }
 
                                 if (targetForRemove != null) {
-                                    mQuestionArrayList.remove(targetForRemove)
+                                    //mQuestionArrayList.remove(targetForRemove)
+                                    mQuestionArrayList.remove(targetForRemove!!)
                                 }
                                 mQuestionArrayList.add(question)
 

@@ -102,6 +102,7 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
                             Log.d("test191106n51", (userData!![FavoritesPATH] == null).toString())
                             if (userData!![FavoritesPATH] == null) {
                                 favoriteButton.setBackgroundColor(Color.parseColor("#0000ff")); // 参考：https://seesaawiki.jp/w/moonlight_aska/d/%A5%D3%A5%E5%A1%BC%A4%CE%C7%D8%B7%CA%BF%A7%A4%F2%A4%AB%A4%A8%A4%EB
+                                favoriteButton.text = "fav"
                             }
                             else {
                                 /*

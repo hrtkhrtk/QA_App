@@ -118,11 +118,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val favoriteList = map["favorites"] as java.util.ArrayList<MutableMap<String, String>> // 参考：C:\Users\USER\Documents\TechAcademy Android\QA_App\app\src\main\java\jp\techacademy\hirotaka\iwasaki\qa_app\QuestionDetailListAdapter.kt
 
 
-            val questionUidList = favoriteList.map { favoriteElement -> favoriteElement["questionUid"] } // 参考：https://teratail.com/questions/144040「Listの要素を別のものに置き換えた新しいListを作るには」
 
-            val QuestionArrayListCopy = mQuestionArrayList
-            //for (q2 in mQuestionArrayList) {
-            for (q2 in QuestionArrayListCopy) {
+            val questionUidList = favoriteList.map { favoriteElement -> favoriteElement["questionUid"] } // 参考：https://teratail.com/questions/144040「Listの要素を別のものに置き換えた新しいListを作るには」
+            var index = 0
+            var indexListForRemove = ArrayList<Int>()
+
+            //val QuestionArrayListCopy = mQuestionArrayList
+            for (q2 in mQuestionArrayList) {
+            //for (q2 in QuestionArrayListCopy) {
                 if (!(questionUidList.contains(q2.questionUid))) { // 含まれていなければ
                     //val questionRef = FirebaseDatabase.getInstance().reference.child(ContentsPATH).child(q2.genre).child(q2.questionUid)
                     val questionRef = FirebaseDatabase.getInstance().reference.child(ContentsPATH).child(q2.genre.toString()).child(q2.questionUid)
@@ -190,11 +193,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     questionRef.removeEventListener(localEventListener) // これで機能している？
 */
 
-                    mQuestionArrayList.remove(q2)
+                    //mQuestionArrayList.remove(q2)
+
+                    indexListForRemove.add(index)
+                    Log.d("test191119n01", index.toString())
 
 //                    mAdapter.notifyDataSetChanged() // ここでいい？
                 }
+
+                index += 1
             }
+
+            for (index in indexListForRemove) {
+                mQuestionArrayList.removeAt(index) // 参考：Lesson3項目11.3
+            }
+
+
+
+
 
 
             for (favoriteElement in favoriteList) {

@@ -167,13 +167,58 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //                                mQuestionArrayList.add(question)
 
 
-                                for (q in mQuestionArrayList) { // 参考：Lesson8項目8.5
-                                    if (questionUid.equals(q.questionUid)) {
-                                        q = question
+
+/*
+                                if (mQuestionArrayList.size > 0) {
+                                    for (q in mQuestionArrayList) { // 参考：Lesson8項目8.5
+                                        if (questionUid.equals(q.questionUid)) {
+                                            //q = question
+                                            mQuestionArrayList.add(question)
 
 //                                        mAdapter.notifyDataSetChanged()
+                                        } else {
+                                            mQuestionArrayList.add(question)
+                                        }
+                                    }
+                                } else {
+                                    mQuestionArrayList.add(question)
+                                }
+*/
+
+
+/*
+                                val mQuestionArrayListOld = mQuestionArrayList
+
+                                if (mQuestionArrayListOld.size > 0) { // > 0 でOK
+                                    mQuestionArrayList = mQuestionArrayListOld.map { old ->
+                                        //(questionUid.equals(old.questionUid)) ?:
+                                        if (questionUid.equals(old.questionUid)) question else old
                                     }
                                 }
+*/
+
+                                //var targetForRemove as Question?
+                                var targetForRemove: Question? = null
+                                for (q in mQuestionArrayList) { // 参考：Lesson8項目8.5
+                                    if (questionUid.equals(q.questionUid)) {
+                                        targetForRemove = q
+                                        //q = question
+                                        //mQuestionArrayList.remove(q)
+                                        //mQuestionArrayList.add(question)
+//                                        mAdapter.notifyDataSetChanged()
+                                    } //else {
+                                        //mQuestionArrayList.add(question)
+                                    //}
+                                }
+
+                                if (targetForRemove != null) {
+                                    mQuestionArrayList.remove(targetForRemove)
+                                }
+                                mQuestionArrayList.add(question)
+
+
+
+
 
                                 mAdapter.notifyDataSetChanged()
                             }

@@ -93,7 +93,6 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
 
                 val dataBaseReference = FirebaseDatabase.getInstance().reference
                 val userRef = dataBaseReference.child(UsersPATH).child(user.uid)
-                //userRef.addListenerForSingleValueEvent(
                 userRef.addValueEventListener(
                     object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
@@ -105,18 +104,7 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
                                 favoriteButton.text = "fav"
                             }
                             else {
-                                /*
-                                //favoriteButton.background = "#ff0000" as Drawable // こんな書き方で大丈夫？ // エラー
-                                //favoriteButton.background = Color.parseColor("#ff0000") as Drawable // エラー
-                                favoriteButton.setBackgroundColor(Color.parseColor("#ff0000")); // 参考：https://seesaawiki.jp/w/moonlight_aska/d/%A5%D3%A5%E5%A1%BC%A4%CE%C7%D8%B7%CA%BF%A7%A4%F2%A4%AB%A4%A8%A4%EB
-                                //favoriteButton.setTextColor(Color.parseColor("#ffd900")) // 参考：https://www.javadrive.jp/android/color/index5.html
-                                    //↑なぜかエラー
-                                //favoriteButton.text = "unfav"
-                                    //↑なぜかエラー
-                                */
-
                                 val existingFavoriteList = userData!![FavoritesPATH] as ArrayList<MutableMap<String, String>>
-                                //val existingFavoriteQuestionUidList = existingFavoriteList.map{ element -> element["questionUid"] } as ArrayList<String>
 
                                 val data = mutableMapOf<String, String>()
                                 data.put("genre", mQustion.genre.toString())
@@ -188,21 +176,14 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
               // 「val answerMap = map["answers"] as Map<String, String>?」
               //  から類推してこれでいい
 
-            //var existingFavoriteList = ArrayList<String>()
 
             // ↓参考：Lesson8「Firebaseからデータを一度だけ取得する場合はDatabaseReferenceクラスが実装しているQueryクラスのaddListenerForSingleValueEventメソッドを使います。」
               // これも参照→https://firebase.google.com/docs/database/android/retrieve-data?hl=ja
-            //favoriteRef.addListenerForSingleValueEvent(
             userRef.addListenerForSingleValueEvent(
 
                 object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        Log.d("test191106n07", "test191106n07")
-
-                        //userData = snapshot.value as Map<String, String>
                         userData = snapshot.value as MutableMap<String, String>
-
-                        Log.d("test191106n40", (userData!![FavoritesPATH] == null).toString())
 
                         if (userData!![FavoritesPATH] == null) {
                             val existingFavoriteList = ArrayList<MutableMap<String, String>>()
@@ -230,62 +211,10 @@ class QuestionDetailListAdapter(context: Context, private val mQustion: Question
                             }
 
                         }
-
-
-
-
                     }
                     override fun onCancelled(firebaseError: DatabaseError) {}
                 }
             )
-
-
-
-            /*
-                //userRef.addChildEventListener(
-                userRef.addChildEventListener(
-                    object : ChildEventListener {
-                        override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) {
-
-                            val data = dataSnapshot.value as Map<*, *>?
-                            Log.d("test191106n20", (data == null).toString())
-                        }
-
-                        override fun onChildChanged(dataSnapshot: DataSnapshot, s: String?) {}
-                        override fun onChildRemoved(dataSnapshot: DataSnapshot) {}
-                        override fun onChildMoved(dataSnapshot: DataSnapshot, s: String?) {}
-                        override fun onCancelled(databaseError: DatabaseError) {}
-                    }
-                )
-            */
-
-            /*
-            if (userData!![FavoritesPATH] == null) {
-                existingFavoriteList.add(mQustion.questionUid)
-            }
-            */
-
-
-
-            //Log.d("test191106n01", userData!!["name"])
-
-            /*
-            if (userData!!["favorites"] == null) {
-                existingFavoriteList.add(mQustion.questionUid)
-            }
-            */
-
-            //userData[FavoritesPATH] = existingFavoriteList
-            //userData!![FavoritesPATH] = ""
-            //userData!!["favorites"] = "" as String
-
-
-
         }
-
-
-
-
-
     }
 }

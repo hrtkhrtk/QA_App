@@ -110,33 +110,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // --- ここまで追加する ---
 
     private val mEventListenerForFavorite = object : ValueEventListener {
-        // TODO:
-
         override fun onDataChange(dataSnapshot: DataSnapshot) {
-            Log.d("test191107n002", "test191107n002")
             val map = dataSnapshot.value as Map<String, String> // Map<String, String>? としなくていい？
-            //val favoriteList = map["favorites"] as java.util.ArrayList<MutableMap<String, String>> // 参考：C:\Users\USER\Documents\TechAcademy Android\QA_App\app\src\main\java\jp\techacademy\hirotaka\iwasaki\qa_app\QuestionDetailListAdapter.kt
             val favoriteList = map["favorites"] as java.util.ArrayList<MutableMap<String, String>>? // 参考：C:\Users\USER\Documents\TechAcademy Android\QA_App\app\src\main\java\jp\techacademy\hirotaka\iwasaki\qa_app\QuestionDetailListAdapter.kt
 
 
-            //var questionUidList = List<String>()
+
             var questionUidList = ArrayList<String>()
             if (favoriteList != null) {
-                //val questionUidList = favoriteList.map { favoriteElement -> favoriteElement["questionUid"] } // 参考：https://teratail.com/questions/144040「Listの要素を別のものに置き換えた新しいListを作るには」
                 questionUidList = favoriteList.map { favoriteElement -> favoriteElement["questionUid"]!! } as ArrayList<String> // 参考：https://teratail.com/questions/144040「Listの要素を別のものに置き換えた新しいListを作るには」
             } else {
-                //val questionUidList = List<String>()
             }
             var index = 0
             var indexListForRemove = ArrayList<Int>()
 
-            //val QuestionArrayListCopy = mQuestionArrayList
+
             for (q2 in mQuestionArrayList) {
-            //for (q2 in QuestionArrayListCopy) {
                 if (!(questionUidList.contains(q2.questionUid))) { // 含まれていなければ
-                    //val questionRef = FirebaseDatabase.getInstance().reference.child(ContentsPATH).child(q2.genre).child(q2.questionUid)
                     val questionRef = FirebaseDatabase.getInstance().reference.child(ContentsPATH).child(q2.genre.toString()).child(q2.questionUid)
-                    //questionRef.removeEventListener(localEventListener)
+
 
 
                     val localEventListener =
@@ -196,16 +188,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             override fun onCancelled(firebaseError: DatabaseError) {}
                         }
 
-
                     questionRef.removeEventListener(localEventListener) // これで機能している？
 
 
-                    //mQuestionArrayList.remove(q2)
-
                     indexListForRemove.add(index)
-                    Log.d("test191119n01", index.toString())
-
-//                    mAdapter.notifyDataSetChanged() // ここでいい？
                 }
 
                 index += 1
@@ -213,13 +199,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             for (index in indexListForRemove) {
                 mQuestionArrayList.removeAt(index) // 参考：Lesson3項目11.3
-
-                //if (mQuestionArrayList == null) { // これじゃダメっぽい
-                //if (mQuestionArrayList.size == 0) {
-                //    Log.d("test191119n02", "test191119n02")
-                //    mAdapter.notifyDataSetChanged()
-                //}
-
                 mAdapter.notifyDataSetChanged() // ここでいい？
             }
 
@@ -309,12 +288,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             }
 
-
-
         }
 
         override fun onCancelled(firebaseError: DatabaseError) {}
     }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -383,8 +362,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val nav_favorite = menuNav.findItem(R.id.nav_favorite)
             if (user == null) {
                 // ログインしていなければ非表示にする
-                //nav_favorite.visibility = View.VISIBLE // これは動作しない
-                //nav_favorite.setTitle("ほげ") // これは動作した
                 nav_favorite.setVisible(false) // これは動作した // 参考：https://stackoverflow.com/questions/10692755/how-do-i-hide-a-menu-item-in-the-actionbar
             }
             else {
